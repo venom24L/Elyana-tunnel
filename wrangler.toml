@@ -1,9 +1,7 @@
 name = "guid"
 main = "_worker.js"
 compatibility_date = "2026-04-20"
-
-# التغيير الجوهري هنا (بدل node_compat)
-compatibility_flags = [ "nodejs_compat" ]
+compatibility_flags = ["nodejs_compat"]
 
 [observability]
 enabled = true
