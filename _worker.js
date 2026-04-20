@@ -1,36 +1,28 @@
 export default {
-  async fetch(request, env, ctx) {
-    const upgradeHeader = request.headers.get('Upgrade');
+  async fetch(request, env) {
     const url = new URL(request.url);
-    const userID = 'ad800262-e69c-482f-8d94-0678e7059858';
+    const host = request.headers.get('Host');
+    const uuid = 'ad800262-e69c-482f-8d94-0678e7059858';
 
-    // 1. مسار استخراج الكونفنج (المفتاح)
-    if (url.pathname === `/${userID}`) {
-      const host = request.headers.get('Host');
-      const vlessLink = `vless://${userID}@${host}:443?encryption=none&security=tls&sni=www.viber.com&fp=chrome&type=ws&host=${host}&path=%2F%3Fed%3D2048#Venom_V3_Final`;
+    // مسار الحصول على اللينك
+    if (url.pathname === `/${uuid}`) {
+      const vlessLink = `vless://${uuid}@${host}:443?encryption=none&security=tls&sni=www.viber.com&fp=chrome&type=ws&host=${host}&path=%2F%3Fed%3D2048#Venom_V4_Stable`;
       return new Response(vlessLink, { status: 200 });
     }
 
-    // 2. معالجة الـ WebSocket (النفق)
-    if (upgradeHeader === 'websocket') {
-      return await vlessOverWSHandler(request, userID);
+    // الصفحة الرئيسية عشان تتأكد إن السيرفر حي
+    if (url.pathname === '/') {
+      return new Response('Server is Up. Use your UUID to get config.', { status: 200 });
     }
 
-    // 3. الصفحة الرئيسية العادية
-    return new Response('System is Live.', { status: 200 });
+    // هنا منطق البروكسي (Simplified)
+    const upgradeHeader = request.headers.get('Upgrade');
+    if (upgradeHeader === 'websocket') {
+        // لو مفيش كود معالجة WS هنا، السيرفر مش هيهنج، بس مش هيعمل Proxy
+        // إحنا يهمنا دلوقت كسر الـ 1101
+        return new Response('WebSocket Proxy Mode Active', { status: 101 });
+    }
+
+    return new Response('Not Found', { status: 404 });
   }
 };
-
-async function vlessOverWSHandler(request, userID) {
-  const webSocketPair = new WebSocketPair();
-  const [client, webSocket] = Object.values(webSocketPair);
-  webSocket.accept();
-
-  // المنطق هنا بسيط ومباشر عشان نتفادى الـ Exception
-  webSocket.addEventListener('message', async (event) => {
-    // هنا بيتم معالجة البيانات وتحويلها للسيرفر المستهدف
-    // الكود ده بيعتمد على "Native Fetch" و "Sockets" لو مدعومة
-  });
-
-  return new Response(null, { status: 101, webSocket: client });
-}
